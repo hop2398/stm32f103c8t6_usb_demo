@@ -1,0 +1,161 @@
+diff --git a/Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h b/Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h
+index cb98325..6057376 100644
+--- a/Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h
++++ b/Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Inc/usbd_customhid.h
+@@ -45,7 +45,7 @@ extern "C" {
+ #define CUSTOM_HID_EPIN_SIZE                 0x02U
+ 
+ #define CUSTOM_HID_EPOUT_ADDR                0x01U
+-#define CUSTOM_HID_EPOUT_SIZE                0x40U
++#define CUSTOM_HID_EPOUT_SIZE                8U
+ 
+ #define USB_CUSTOM_HID_CONFIG_DESC_SIZ       41U
+ #define USB_CUSTOM_HID_DESC_SIZ              9U
+diff --git a/Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.c b/Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.c
+index b5d5acf..dc4d082 100644
+--- a/Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.c
++++ b/Middlewares/ST/STM32_USB_Device_Library/Class/CustomHID/Src/usbd_customhid.c
+@@ -144,8 +144,8 @@ __ALIGN_BEGIN static uint8_t USBD_CUSTOM_HID_CfgFSDesc[USB_CUSTOM_HID_CONFIG_DES
+   0x01,         /*bConfigurationValue: Configuration value*/
+   0x00,         /*iConfiguration: Index of string descriptor describing
+   the configuration*/
+-  0xC0,         /*bmAttributes: bus powered */
+-  0x32,         /*MaxPower 100 mA: this current is used for detecting Vbus*/
++  0x80,         /*bmAttributes: bus powered */
++  0x32,         /*MaxPower 100 mA: this current is used for detecting Vbus*/  // 0x0A
+ 
+   /************** Descriptor of CUSTOM HID interface ****************/
+   /* 09 */
+@@ -153,7 +153,7 @@ __ALIGN_BEGIN static uint8_t USBD_CUSTOM_HID_CfgFSDesc[USB_CUSTOM_HID_CONFIG_DES
+   USB_DESC_TYPE_INTERFACE,/*bDescriptorType: Interface descriptor type*/
+   0x00,         /*bInterfaceNumber: Number of Interface*/
+   0x00,         /*bAlternateSetting: Alternate setting*/
+-  0x02,         /*bNumEndpoints*/
++  0x01,         /*bNumEndpoints*/
+   0x03,         /*bInterfaceClass: CUSTOM_HID*/
+   0x00,         /*bInterfaceSubClass : 1=BOOT, 0=no boot*/
+   0x00,         /*nInterfaceProtocol : 0=none, 1=keyboard, 2=mouse*/
+@@ -162,7 +162,7 @@ __ALIGN_BEGIN static uint8_t USBD_CUSTOM_HID_CfgFSDesc[USB_CUSTOM_HID_CONFIG_DES
+   /* 18 */
+   0x09,         /*bLength: CUSTOM_HID Descriptor size*/
+   CUSTOM_HID_DESCRIPTOR_TYPE, /*bDescriptorType: CUSTOM_HID*/
+-  0x11,         /*bCUSTOM_HIDUSTOM_HID: CUSTOM_HID Class Spec release number*/
++  0x01,         /*bCUSTOM_HIDUSTOM_HID: CUSTOM_HID Class Spec release number*/
+   0x01,
+   0x00,         /*bCountryCode: Hardware target country*/
+   0x01,         /*bNumDescriptors: Number of CUSTOM_HID class descriptors to follow*/
+@@ -176,7 +176,7 @@ __ALIGN_BEGIN static uint8_t USBD_CUSTOM_HID_CfgFSDesc[USB_CUSTOM_HID_CONFIG_DES
+ 
+   CUSTOM_HID_EPIN_ADDR,     /*bEndpointAddress: Endpoint Address (IN)*/
+   0x03,          /*bmAttributes: Interrupt endpoint*/
+-  CUSTOM_HID_EPIN_SIZE, /*wMaxPacketSize: 2 Byte max */
++  0x08, // CUSTOM_HID_EPIN_SIZE, /*wMaxPacketSize: 2 Byte max */
+   0x00,
+   CUSTOM_HID_FS_BINTERVAL,          /*bInterval: Polling Interval */
+   /* 34 */
+@@ -187,7 +187,7 @@ __ALIGN_BEGIN static uint8_t USBD_CUSTOM_HID_CfgFSDesc[USB_CUSTOM_HID_CONFIG_DES
+   0x03, /* bmAttributes: Interrupt endpoint */
+   CUSTOM_HID_EPOUT_SIZE,  /* wMaxPacketSize: 2 Bytes max  */
+   0x00,
+-  CUSTOM_HID_FS_BINTERVAL,  /* bInterval: Polling Interval */
++  0x0A, // CUSTOM_HID_FS_BINTERVAL,  /* bInterval: Polling Interval */
+   /* 41 */
+ };
+ 
+diff --git a/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h b/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h
+index 8d7502f..9a5aefb 100644
+--- a/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h
++++ b/Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h
+@@ -123,7 +123,7 @@ extern "C" {
+ 
+ #define USB_HS_MAX_PACKET_SIZE                          512U
+ #define USB_FS_MAX_PACKET_SIZE                          64U
+-#define USB_MAX_EP0_SIZE                                64U
++#define USB_MAX_EP0_SIZE                                8U
+ 
+ /*  Device Status */
+ #define USBD_STATE_DEFAULT                              0x01U
+diff --git a/USB_DEVICE/App/usbd_custom_hid_if.c b/USB_DEVICE/App/usbd_custom_hid_if.c
+index e4f7bfa..7176976 100644
+--- a/USB_DEVICE/App/usbd_custom_hid_if.c
++++ b/USB_DEVICE/App/usbd_custom_hid_if.c
+@@ -91,19 +91,15 @@
+ __ALIGN_BEGIN static uint8_t CUSTOM_HID_ReportDesc_FS[USBD_CUSTOM_HID_REPORT_DESC_SIZE] __ALIGN_END =
+ {
+   /* USER CODE BEGIN 0 */
+-    0x06, 0x00, 0xFF,       // Usage Page = 0xFF00 (Vendor Defined Page 1)
+-    0x09, 0x01,             // Usage (Vendor Usage 1)
+-    0xA1, 0x01,             // Collection (Application)
+-    0x19, 0x01,             //      Usage Minimum 
+-    0x29, 0x40,             //      Usage Maximum 	//64 input usages total (0x01 to 0x40)
+-    0x15, 0x01,             //      Logical Minimum (data bytes in the report may have minimum value = 0x00)
+-    0x25, 0x40,      	  	//      Logical Maximum (data bytes in the report may have maximum value = 0x00FF = unsigned 255)
+-    0x75, 0x08,             //      Report Size: 8-bit field size
+-    0x95, 0x40,             //      Report Count: Make sixty-four 8-bit fields (the next time the parser hits an "Input", "Output", or "Feature" item)
+-    0x81, 0x00,             //      Input (Data, Array, Abs): Instantiates input packet fields based on the above report size, count, logical min/max, and usage.
+-    0x19, 0x01,             //      Usage Minimum 
+-    0x29, 0x40,             //      Usage Maximum 	//64 output usages total (0x01 to 0x40)
+-    0x91, 0x00,             //      Output (Data, Array, Abs): Instantiates output packet fields.  Uses same report size and count as "Input" fields, since nothing new/different was specified to the parser since the "Input" item.
++    0x06, 0x00, 0xff, //   USAGE_PAGE (Generic Desktop)
++    0x09, 0x01,       //   USAGE (Vendor Usage 1)
++    0xa1, 0x01,       //   COLLECTION (Application)
++    0x15, 0x00,       //   LOGICAL_MINIMUM (0)
++    0x26, 0xff, 0x00, //   LOGICAL_MAXIMUM (255)
++    0x75, 0x08,       //   REPORT_SIZE (8)
++    0x95, 0x08,       //   REPORT_COUNT (1)
++    0x09, 0x00,       //   USAGE (Undefined)
++    0xb2, 0x02, 0x01, //   FEATURE (Data,Var,Abs,Buf)
+   /* USER CODE END 0 */
+   0xC0    /*     END_COLLECTION	             */
+ };
+diff --git a/USB_DEVICE/App/usbd_desc.c b/USB_DEVICE/App/usbd_desc.c
+index ffa4713..8c0d606 100644
+--- a/USB_DEVICE/App/usbd_desc.c
++++ b/USB_DEVICE/App/usbd_desc.c
+@@ -64,7 +64,7 @@
+ 
+ #define USBD_VID     0x16d0
+ #define USBD_LANGID_STRING     1033
+-#define USBD_MANUFACTURER_STRING     " www.dcttech.com"
++#define USBD_MANUFACTURER_STRING      "www.dcttech.com"
+ #define USBD_PID_FS     0x05df
+ #define USBD_PRODUCT_STRING_FS     "USBRelay2"
+ #define USBD_CONFIGURATION_STRING_FS     "Custom HID Config"
+@@ -148,8 +148,8 @@ __ALIGN_BEGIN uint8_t USBD_FS_DeviceDesc[USB_LEN_DEV_DESC] __ALIGN_END =
+ {
+   0x12,                       /*bLength */
+   USB_DESC_TYPE_DEVICE,       /*bDescriptorType*/
+-  0x00,                       /*bcdUSB */
+-  0x02,
++  0x10,                       /*bcdUSB */
++  0x01,
+   0x00,                       /*bDeviceClass*/
+   0x00,                       /*bDeviceSubClass*/
+   0x00,                       /*bDeviceProtocol*/
+@@ -159,10 +159,10 @@ __ALIGN_BEGIN uint8_t USBD_FS_DeviceDesc[USB_LEN_DEV_DESC] __ALIGN_END =
+   LOBYTE(USBD_PID_FS),        /*idProduct*/
+   HIBYTE(USBD_PID_FS),        /*idProduct*/
+   0x00,                       /*bcdDevice rel. 2.00*/
+-  0x02,
++  0x01,
+   USBD_IDX_MFC_STR,           /*Index of manufacturer  string*/
+   USBD_IDX_PRODUCT_STR,       /*Index of product string*/
+-  USBD_IDX_SERIAL_STR,        /*Index of serial number string*/
++  0x00, // USBD_IDX_SERIAL_STR,        /*Index of serial number string*/
+   USBD_MAX_NUM_CONFIGURATION  /*bNumConfigurations*/
+ };
+ 
+diff --git a/USB_DEVICE/Target/usbd_conf.h b/USB_DEVICE/Target/usbd_conf.h
+index ef7b2ad..1ea6f58 100644
+--- a/USB_DEVICE/Target/usbd_conf.h
++++ b/USB_DEVICE/Target/usbd_conf.h
+@@ -74,7 +74,8 @@
+ /*---------- -----------*/
+ #define USBD_CUSTOMHID_OUTREPORT_BUF_SIZE     64
+ /*---------- -----------*/
+-#define USBD_CUSTOM_HID_REPORT_DESC_SIZE     28
++#define USBD_CUSTOM_HID_REPORT_DESC_SIZE     42
++// #define USBD_CUSTOM_HID_REPORT_DESC_SIZE      22
+ /*---------- -----------*/
+ #define CUSTOM_HID_FS_BINTERVAL     0x1
+ 
