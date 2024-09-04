@@ -62,11 +62,11 @@
   * @{
   */
 
-#define USBD_VID     0x0103
+#define USBD_VID     0x16d0
 #define USBD_LANGID_STRING     1033
-#define USBD_MANUFACTURER_STRING     "STMicroelectronics"
-#define USBD_PID_FS     0x0103
-#define USBD_PRODUCT_STRING_FS     "STM32 Custom Human interface"
+#define USBD_MANUFACTURER_STRING     " www.dcttech.com"
+#define USBD_PID_FS     0x05df
+#define USBD_PRODUCT_STRING_FS     "USBRelay2"
 #define USBD_CONFIGURATION_STRING_FS     "Custom HID Config"
 #define USBD_INTERFACE_STRING_FS     "STM32F103 USB HoP"
 
