@@ -62,11 +62,11 @@
   * @{
   */
 
-#define USBD_VID     0x16d0
+#define USBD_VID     0x16c0
 #define USBD_LANGID_STRING     1033
-#define USBD_MANUFACTURER_STRING     " www.dcttech.com"
+#define USBD_MANUFACTURER_STRING     "www.dcttech.com"
 #define USBD_PID_FS     0x05df
-#define USBD_PRODUCT_STRING_FS     "USBRelay2"
+#define USBD_PRODUCT_STRING_FS     "USBRelay8"
 #define USBD_CONFIGURATION_STRING_FS     "Custom HID Config"
 #define USBD_INTERFACE_STRING_FS     "STM32F103 USB HoP"
 
@@ -148,8 +148,8 @@ __ALIGN_BEGIN uint8_t USBD_FS_DeviceDesc[USB_LEN_DEV_DESC] __ALIGN_END =
 {
   0x12,                       /*bLength */
   USB_DESC_TYPE_DEVICE,       /*bDescriptorType*/
-  0x00,                       /*bcdUSB */
-  0x02,
+  0x10,                       /*bcdUSB */
+  0x01,
   0x00,                       /*bDeviceClass*/
   0x00,                       /*bDeviceSubClass*/
   0x00,                       /*bDeviceProtocol*/
@@ -159,7 +159,7 @@ __ALIGN_BEGIN uint8_t USBD_FS_DeviceDesc[USB_LEN_DEV_DESC] __ALIGN_END =
   LOBYTE(USBD_PID_FS),        /*idProduct*/
   HIBYTE(USBD_PID_FS),        /*idProduct*/
   0x00,                       /*bcdDevice rel. 2.00*/
-  0x02,
+  0x01,
   USBD_IDX_MFC_STR,           /*Index of manufacturer  string*/
   USBD_IDX_PRODUCT_STR,       /*Index of product string*/
   USBD_IDX_SERIAL_STR,        /*Index of serial number string*/

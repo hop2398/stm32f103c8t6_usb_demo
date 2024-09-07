@@ -144,7 +144,7 @@ __ALIGN_BEGIN static uint8_t USBD_CUSTOM_HID_CfgFSDesc[USB_CUSTOM_HID_CONFIG_DES
   0x01,         /*bConfigurationValue: Configuration value*/
   0x00,         /*iConfiguration: Index of string descriptor describing
   the configuration*/
-  0xC0,         /*bmAttributes: bus powered */
+  0x80,         /*bmAttributes: bus powered */
   0x32,         /*MaxPower 100 mA: this current is used for detecting Vbus*/
 
   /************** Descriptor of CUSTOM HID interface ****************/
@@ -162,7 +162,7 @@ __ALIGN_BEGIN static uint8_t USBD_CUSTOM_HID_CfgFSDesc[USB_CUSTOM_HID_CONFIG_DES
   /* 18 */
   0x09,         /*bLength: CUSTOM_HID Descriptor size*/
   CUSTOM_HID_DESCRIPTOR_TYPE, /*bDescriptorType: CUSTOM_HID*/
-  0x11,         /*bCUSTOM_HIDUSTOM_HID: CUSTOM_HID Class Spec release number*/
+  0x01,         /*bCUSTOM_HIDUSTOM_HID: CUSTOM_HID Class Spec release number*/
   0x01,
   0x00,         /*bCountryCode: Hardware target country*/
   0x01,         /*bNumDescriptors: Number of CUSTOM_HID class descriptors to follow*/
@@ -633,26 +633,42 @@ static uint8_t  USBD_CUSTOM_HID_DataIn(USBD_HandleTypeDef *pdev,
   * @param  epnum: endpoint index
   * @retval status
   */
-uint8_t u8Buff[64];
+uint8_t u8Buff[USBD_CUSTOMHID_OUTREPORT_BUF_SIZE];
+extern void blink(int a);
+extern uint8_t dataOut[3];
 static uint8_t  USBD_CUSTOM_HID_DataOut(USBD_HandleTypeDef *pdev,
                                         uint8_t epnum)
 {
-
-
   USBD_CUSTOM_HID_HandleTypeDef     *hhid = (USBD_CUSTOM_HID_HandleTypeDef *)pdev->pClassData;
 
   ((USBD_CUSTOM_HID_ItfTypeDef *)pdev->pUserData)->OutEvent(hhid->Report_buf[0],
                                                             hhid->Report_buf[1]);
+  dataOut[0] = hhid->Report_buf[0];
+  dataOut[1] = hhid->Report_buf[1];
+  dataOut[2] = hhid->Report_buf[2];
+  // blink(2);
   if(hhid->Report_buf[0] == 0) {
-    u8Buff[0] = 0x01;
-    u8Buff[1] = 0x03;
-    USBD_CUSTOM_HID_SendReport(pdev, u8Buff, 64);
+    // u8Buff[0] = 0x01;
+    // u8Buff[1] = 0x03;
+    // USBD_CUSTOM_HID_SendReport(pdev, u8Buff, USBD_CUSTOMHID_OUTREPORT_BUF_SIZE);
+    blink(0);
   }
-  else if (hhid->Report_buf[0] == 0x02)
+  else if (hhid->Report_buf[0] == 0xFD)
   {
-    u8Buff[0] = 0x02;
-    u8Buff[1] = 0x04;
-    USBD_CUSTOM_HID_SendReport(pdev, u8Buff, 64);
+  //   u8Buff[0] = 0x02;
+  //   u8Buff[1] = 0x04;
+    // USBD_CUSTOM_HID_SendReport(pdev, u8Buff, USBD_CUSTOMHID_OUTREPORT_BUF_SIZE);
+    blink(1);
+  }
+  else if (hhid->Report_buf[0] == 0xFA)
+  {
+    // u8Buff[0] = 0x05;
+    // u8Buff[1] = 0x07;
+    // USBD_CUSTOM_HID_SendReport(pdev, u8Buff, USBD_CUSTOMHID_OUTREPORT_BUF_SIZE);
+    blink(2);
+  }
+  else {
+    blink(2);
   }
 
   USBD_LL_PrepareReceive(pdev, CUSTOM_HID_EPOUT_ADDR, hhid->Report_buf,

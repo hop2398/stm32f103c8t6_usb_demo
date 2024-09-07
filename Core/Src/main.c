@@ -57,11 +57,40 @@ static void MX_GPIO_Init(void);
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
-
+void blink(int a)
+{
+    if (a==0)
+    {
+        for (uint8_t i = 0; i < 15; i++){
+            GPIOC->BRR |= 1<<13;
+            for (int i = 0; i < 900000; ++i) asm("nop");
+            GPIOC->BSRR |= 1<<13;
+            for (int i = 0; i <  900000; ++i) asm("nop");
+        }
+    }
+    else if (a==1){
+        for (uint8_t i = 0; i < 5; i++){
+            GPIOC->BRR |= 1<<13;
+            for (int i = 0; i < 900000; ++i) asm("nop");
+            GPIOC->BSRR |= 1<<13;
+            for (int i = 0; i <  900000; ++i) asm("nop");
+        }
+    }
+    else{
+        for (uint8_t i = 0; i < 2; i++){
+            GPIOC->BRR |= 1<<13;
+            for (int i = 0; i < 900000; ++i) asm("nop");
+            GPIOC->BSRR |= 1<<13;
+            for (int i = 0; i <  900000; ++i) asm("nop");
+        }
+    }
+    // while(1);
+}
 /**
   * @brief  The application entry point.
   * @retval int
   */
+ uint8_t dataOut[3] = {0};
 int main(void)
 {
 
@@ -94,9 +123,11 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   while (1)
   {
     /* USER CODE END WHILE */
+    if(dataOut[0]|| dataOut[1] || dataOut[2] )  blink(1);
 
     /* USER CODE BEGIN 3 */
   }
@@ -156,12 +187,24 @@ void SystemClock_Config(void)
   */
 static void MX_GPIO_Init(void)
 {
+GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
